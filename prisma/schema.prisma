@@ -1,0 +1,61 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model Admin {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+  employee_id String @unique
+  admin_name String
+  admin_username String
+  admin_password String
+  admin_surname String
+  @@map("admins")
+}
+
+model Agent {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+  date String
+  timestamp DateTime
+  employee_id String @unique
+  profile_img String
+  agent_name String
+  agent_surname String
+  agent_username String
+  agent_password String
+
+  // Relation to Log model
+  logs Log[] @relation("AgentLogs")
+  @@map("agents")
+}
+
+model Log {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+  logged_by_name String
+  logged_by_surname String
+  logged_by_id String
+  driver_firstname String
+  driver_surname String
+  date String
+  vehicle_type String
+  plate_number String
+  no_of_passenger Int
+  time_in String
+  time_in_parse String
+  time_out String
+  time_out_parse String
+
+  // Relation to Agent model
+  agent Agent @relation("AgentLogs", fields: [logged_by_id], references: [employee_id])
+  @@map("logs")
+}
