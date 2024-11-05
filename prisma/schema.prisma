@@ -26,9 +26,9 @@ model Admin {
 model Agent {
   id String @id @default(auto()) @map("_id") @db.ObjectId
   date String
-  timestamp DateTime
+  timestamp DateTime @default(now())
   employee_id String @unique
-  profile_img String
+  profile_img String?
   agent_name String
   agent_surname String
   agent_username String

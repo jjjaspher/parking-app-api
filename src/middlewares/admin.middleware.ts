@@ -1,11 +1,11 @@
 import { Request, Response, NextFunction, RequestHandler } from "express";
 import { ZodSchema } from "zod";
 
-export const validateSchema = <T>(schema: ZodSchema<T>): RequestHandler => {
-  console.log('validateSchema');
+export const validateSchema = (schema: ZodSchema): RequestHandler => {
   
   return (req: Request, res: Response, next: NextFunction) => {
     const result = schema.safeParse(req.body);
+    console.log('validateSchema', req.body);
     
     if (!result.success) {
       console.log(result.error.errors)
