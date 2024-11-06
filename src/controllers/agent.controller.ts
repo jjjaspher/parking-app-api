@@ -1,12 +1,11 @@
 import { Request, Response } from "express";
 import prisma from "../client";
-import { json } from "stream/consumers";
 
-const queryAgentByEmployeeID = async (employeeID: string) => {
+const queryAgentByAgentID = async (agentID: string) => {
   try {
     const agent = await prisma.agent.findFirst({
       where: {
-        employee_id: employeeID,
+        agent_id: agentID,
       },
     });
 
@@ -24,8 +23,8 @@ const queryAgentByEmployeeID = async (employeeID: string) => {
 export async function createAgent(req: Request, res: Response) {
   try {
     console.log(req.body);
-    const employeeID = req.body.employee_id;
-    const existingAgent = await queryAgentByEmployeeID(employeeID);
+    const agentID = req.body.agent_id;
+    const existingAgent = await queryAgentByAgentID(agentID);
     if (existingAgent) {
       res.status(400).json({
         status: false,
@@ -53,10 +52,8 @@ export async function createAgent(req: Request, res: Response) {
 
 // Get All Agent
 export async function getAllAgents(_req: Request, res: Response) {
-  console.log('pumasok here')
   try {
     const agents = await prisma.agent.findMany();
-    console.log(agents)
     res.json({
       status: true,
       message: "Agents Successfully fetched",
@@ -65,21 +62,25 @@ export async function getAllAgents(_req: Request, res: Response) {
     
   } catch (error) {
     console.log('may error', error)
+    res.status(500).json({
+      status: false,
+      message: 'server error'
+    });
   }
   
 }
 
-// Get Agent by employeeID
-export async function getAgentByEmployeeID(req: Request, res: Response) {
-  const employeeID = req.query.employeeID as string;
-  if (!employeeID) {
+// Get Agent by AgentID
+export async function getAgentByAgentID(req: Request, res: Response) {
+  const agentID = req.query.agentID as string;
+  if (!agentID) {
     res.status(400).json({
       status: false,
-      message: 'Employee ID is required'
+      message: 'Agent ID is required'
     });
   }
   try {
-    const agent = await queryAgentByEmployeeID(employeeID);
+    const agent = await queryAgentByAgentID(agentID);
     if (!agent) {
       res.status(400).json({
         status: false,
@@ -94,18 +95,23 @@ export async function getAgentByEmployeeID(req: Request, res: Response) {
     });
     
   } catch (error) {
+    console.log(error)
+    res.status(500).json({
+      status: false,
+      message: 'server error'
+    });
     
   }
   
 }
 
 // Update Agent using employeeID
-export async function updateAgentByEmployeeID(req: Request, res: Response) {
-  const employeeID = req.body.employee_id;
+export async function updateAgentByAgentID(req: Request, res: Response) {
+  const agentID = req.body.agent_id;
 
   try {
-    const existingAgent = await queryAgentByEmployeeID(employeeID);
-    if (!existingAgent) {
+    const existingAgent = await queryAgentByAgentID(agentID);
+    if (!existingAgent) {agentID
       res.status(400).json({
         status: false,
         message: 'Agent not exist'
@@ -118,7 +124,7 @@ export async function updateAgentByEmployeeID(req: Request, res: Response) {
 
   const updatedAgent = await prisma.agent.update({
     where: {
-    employee_id: employeeID
+    agent_id: agentID
     },
     data: filteredBody
   });

@@ -15,7 +15,7 @@ datasource db {
 
 model Admin {
   id String @id @default(auto()) @map("_id") @db.ObjectId
-  employee_id String @unique
+  admin_id String @unique
   admin_name String
   admin_username String
   admin_password String
@@ -27,7 +27,7 @@ model Agent {
   id String @id @default(auto()) @map("_id") @db.ObjectId
   date String
   timestamp DateTime @default(now())
-  employee_id String @unique
+  agent_id String @unique
   profile_img String?
   agent_name String
   agent_surname String
@@ -41,9 +41,10 @@ model Agent {
 
 model Log {
   id String @id @default(auto()) @map("_id") @db.ObjectId
+  timestamp DateTime @default(now())
   logged_by_name String
   logged_by_surname String
-  logged_by_id String
+  logged_by_agent_id String
   driver_firstname String
   driver_surname String
   date String
@@ -56,6 +57,6 @@ model Log {
   time_out_parse String
 
   // Relation to Agent model
-  agent Agent @relation("AgentLogs", fields: [logged_by_id], references: [employee_id])
+  agent Agent @relation("AgentLogs", fields: [logged_by_agent_id], references: [agent_id])
   @@map("logs")
 }

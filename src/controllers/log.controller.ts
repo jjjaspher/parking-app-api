@@ -3,11 +3,8 @@ import prisma from "../client";
 
 // Get all Logs
 export async function getAllLogs(_req: Request, res: Response) {
-  console.log('pumasok here getAllLogs')
   try {
-    console.log(_req)
     const logs = await prisma.log.findMany();
-    console.log(logs)
     res.json({
       status: true,
       message: "Logs Successfully fetched",
@@ -19,16 +16,28 @@ export async function getAllLogs(_req: Request, res: Response) {
   }
 };
 
-// Get all logs by 'logged_by_id' **
-export async function getAllLogsByLoggedByID(req: Request, res: Response) {
+// Get all logs by 'logged_by_agent_id' **
+export async function getAllLogsByLoggedByAgentID(req: Request, res: Response) {
   try {
-    const loggedByID = req.query.logged_by_id as string | undefined;
+    const loggedByAgentID = req.query.logged_by_agent_id as string | undefined;
+    if (!loggedByAgentID) {
+      res.status(400).json({
+        status: false,
+        message: "Agent ID si required"
+      })
+      return;
+    }
 
     const logs = await prisma.log.findMany({
       where: {
-        logged_by_id: loggedByID || undefined
+        logged_by_agent_id: loggedByAgentID || undefined
       }
     });
+    res.status(200).json({
+      status: true,
+      message: `Successfully Fetch All Logs by Agent ID ${loggedByAgentID}`,
+      data: logs
+    })
   } catch (error) {
     console.log('may error', error)
   }

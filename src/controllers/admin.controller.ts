@@ -1,10 +1,12 @@
 import { Request, Response } from "express";
 import prisma from "../client";
 
-// Get Admin by employee_id
-const queryAdminByEmployeeID = async (employeeID: string) => {
+// Get Admin by admin_id
+const queryAdminByAdminID = async (adminID: string) => {
   const existingAdmin = await prisma.admin.findFirst({
-    where: { employee_id : employeeID}
+    where: {
+      admin_id: adminID
+    }
   });
   if (existingAdmin) {
     return existingAdmin;
@@ -29,17 +31,17 @@ export async function getAllAdmin(_req: Request, res: Response) {
   }
 };
 
-export async function getAdminByEmployeeID(req: Request, res: Response) {
-  const employeeID = req.query.employeeID as string;
-  if (!employeeID) {
+export async function getAdminByAdminID(req: Request, res: Response) {
+  const adminID = req.query.adminID as string;
+  if (!adminID) {
     res.status(400).json({
       status: false,
-      message: 'Employee ID is required'
+      message: 'Admin ID is required'
     });
   }
 
   try {
-    const existingAdmin = await queryAdminByEmployeeID(employeeID);
+    const existingAdmin = await queryAdminByAdminID(adminID);
     if (!existingAdmin) {
       res.status(400).json({
         status: false,
@@ -59,12 +61,12 @@ export async function getAdminByEmployeeID(req: Request, res: Response) {
 export async function createAdmin(req: Request, res: Response): Promise<any> {
   try {
     console.log(req.body)
-    const employeeID = req.body.employee_id;
-    const existingAdmin = await queryAdminByEmployeeID(employeeID);
+    const adminID = req.body.admin_id;
+    const existingAdmin = await queryAdminByAdminID(adminID);
     if (existingAdmin) {
       res.status(400).json({
         status: false,
-        message: 'Admin employee ID already exist'
+        message: 'Admin ID already exist'
       });
       return;
     }
