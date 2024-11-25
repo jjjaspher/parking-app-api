@@ -2,16 +2,18 @@ import { Router } from 'express';
 import {
   getAllAdmin,
   createAdmin,
-  getAdminByEmployeeID
+  getAdminByAdminID,
+  updateAdmin
 } from '../controllers/admin.controller';
 import { validateSchema } from '../middlewares/admin.middleware';
-import { createAdminSchema } from '../schema/admin.schema';
+import { createAdminSchema, updateaAdminSchema } from '../schema/admin.schema';
 
 // Users layout Route
 const adminRoute = Router();
 adminRoute.get('', getAllAdmin);
-adminRoute.get('/employee', getAdminByEmployeeID);
+adminRoute.get('/employee', getAdminByAdminID);
 adminRoute.post('/create', validateSchema(createAdminSchema), createAdmin);
+adminRoute.post('/update', validateSchema(updateaAdminSchema), updateAdmin);
 
 
 export default adminRoute;

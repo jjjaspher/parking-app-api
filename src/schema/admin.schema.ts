@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 export const createAdminSchema = z.object({
-    employee_id: z.string().min(6, { message: "Min 6 character" }),
+    admin_id: z.string().min(6, { message: "Min 6 character" }),
     admin_name: z.string().min(1, { message: "Cannot be empty" }),
     admin_username: z.string().min(1, { message: "Cannot be empty" }),
     admin_password: z.string().min(1, { message: "Cannot be empty" }),

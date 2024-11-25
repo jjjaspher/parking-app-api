@@ -58,9 +58,8 @@ export async function getAdminByAdminID(req: Request, res: Response) {
   }
 }
 
-export async function createAdmin(req: Request, res: Response): Promise<any> {
+export async function createAdmin(req: Request, res: Response) {
   try {
-    console.log(req.body)
     const adminID = req.body.admin_id;
     const existingAdmin = await queryAdminByAdminID(adminID);
     if (existingAdmin) {
@@ -84,3 +83,36 @@ export async function createAdmin(req: Request, res: Response): Promise<any> {
     console.log('may error', error)
   }
 };
+
+export async function updateAdmin(req: Request, res: Response) {
+  try  {
+    const adminID = req.body.admin_id;
+    const existingAdmin = await queryAdminByAdminID(adminID);
+    if (!existingAdmin) {
+      res.status(400).json({
+        status: false,
+        message: 'Admin ID not exist'
+      });
+      return;
+    }
+
+    const filteredBody = Object.assign({}, req.body);
+    delete filteredBody.admin_id;
+
+    const updatedAdmin = await prisma.admin.update({
+      where: {
+        admin_id: adminID
+      },
+      data: filteredBody
+    });
+    res.status(200).json({
+      status: true,
+      message: "Agent Successfully Updated",
+      data: updatedAdmin
+    });
+
+
+  } catch (err) {
+    console.log(err)
+  };
+}

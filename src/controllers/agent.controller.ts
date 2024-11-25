@@ -119,7 +119,7 @@ export async function updateAgentByAgentID(req: Request, res: Response) {
       return;
     }
   const filteredBody = Object.assign({}, req.body);
-  delete filteredBody.employee_id;
+  delete filteredBody.admin_id;
 
 
   const updatedAgent = await prisma.agent.update({

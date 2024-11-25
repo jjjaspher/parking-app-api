@@ -44,19 +44,59 @@ export async function getAllLogsByLoggedByAgentID(req: Request, res: Response) {
   
 }
 
-// Update time out log by log id **
-export async function updateTimeoutLogByID(req: Request, res: Response) {
+export async function createLog(req: Request, res: Response) {
   try {
-    const { log_id, time_out } = req.body;
-    const log = await prisma.log.findUniqueOrThrow({
+    const body = req.body;
+    const log = await prisma.log.create({
+      data: body
+    });
+    res.status(201).json({
+      status: true,
+      message: "Data Logged Successfully",
+      data: log,
+    });
+    
+  } catch (error) {
+    console.log('May error', error)
+  }
+  
+}
+
+// Update time out log by log id **
+export async function updateTimeoutLogByPlateNumber(req: Request, res: Response) {
+  try {
+    const plateNumber = req.body.plate_number;
+    const timeOut = req.body.time_out;
+
+    const existingLog = await prisma.log.findFirst({
       where: {
-        id: log_id
+        plate_number: plateNumber,
+        time_out: timeOut
       }
     });
+
+    if (!existingLog) {
+      res.status(400).json({
+        status: false,
+        message: "Log Not Found"
+      })
+      return;
+    }
+
+    if (existingLog.time_out !== "") {
+      res.status(400).json({
+        status: false,
+        message: "Car is already logged out"
+      })
+      return;
+    }
+
     const updatedLog = await prisma.log.update({
-      where: { id: log.id },
+      where: {
+        id: existingLog?.id
+      },
       data: {
-        time_out: time_out,
+        time_out: timeOut,
       }
     });
 
