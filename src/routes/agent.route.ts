@@ -12,7 +12,7 @@ import { createAgentSchema, updateAgentSchema } from '../schema/agent.schema';
 const agentRoute = Router();
 // Get Method
 agentRoute.get('', getAllAgents);
-agentRoute.get('/:agentID', getAgentByAgentID);
+agentRoute.get('/agentID', getAgentByAgentID);
 
 // POST Method
 agentRoute.post('/create', validateSchema(createAgentSchema), createAgent);

@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import prisma from "../client";
+import { generateAgentCredsAndTimeout, generateAgentCredsForTimeIn } from "../services/logs.service";
 
 // Get all Logs
 export async function getAllLogs(_req: Request, res: Response) {
@@ -47,8 +48,18 @@ export async function getAllLogsByLoggedByAgentID(req: Request, res: Response) {
 export async function createLog(req: Request, res: Response) {
   try {
     const body = req.body;
+    const agentID = req.body.agent_id
+    const logData = await generateAgentCredsForTimeIn(agentID);
+    if (!logData.status) {
+      res.status(400).json({
+        status: false,
+        message: logData.message
+      });
+      return;
+    }
+    const loggedTimeOutData = {...logData.data, ...body}
     const log = await prisma.log.create({
-      data: body
+      data: loggedTimeOutData
     });
     res.status(201).json({
       status: true,
@@ -67,11 +78,20 @@ export async function updateTimeoutLogByPlateNumber(req: Request, res: Response)
   try {
     const plateNumber = req.body.plate_number;
     const timeOut = req.body.time_out;
+    const agentID = req.body.logged_by_agent_id
+
+    const loggedTimeOutData = await generateAgentCredsAndTimeout(agentID, timeOut);
+    if (loggedTimeOutData.status !== true) {
+      res.status(400).json({
+        status: false,
+        message: loggedTimeOutData.message
+      })
+      return;
+    }
 
     const existingLog = await prisma.log.findFirst({
       where: {
-        plate_number: plateNumber,
-        time_out: timeOut
+        plate_number: plateNumber
       }
     });
 
@@ -82,12 +102,14 @@ export async function updateTimeoutLogByPlateNumber(req: Request, res: Response)
       })
       return;
     }
-
-    if (existingLog.time_out !== "") {
+    console.log(existingLog.time_out !== "")
+    console.log(existingLog.time_out !== null)
+    if (existingLog.time_out !== "" && existingLog.time_out !== null) {
       res.status(400).json({
         status: false,
+        data: existingLog,
         message: "Car is already logged out"
-      })
+      });
       return;
     }
 
@@ -95,9 +117,7 @@ export async function updateTimeoutLogByPlateNumber(req: Request, res: Response)
       where: {
         id: existingLog?.id
       },
-      data: {
-        time_out: timeOut,
-      }
+      data: loggedTimeOutData.data
     });
 
     res.status(201).json({
@@ -107,5 +127,9 @@ export async function updateTimeoutLogByPlateNumber(req: Request, res: Response)
     });
   } catch (error) {
     console.log('may error', error)
+    res.status(400).json({
+      status: false,
+      message: `Something went wrong... ${error}`
+    });
   }
 };

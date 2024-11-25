@@ -45,6 +45,9 @@ model Log {
   logged_by_name String
   logged_by_surname String
   logged_by_agent_id String
+  logged_out_by_name String?
+  logged_out_by_surname String?
+  logged_out_by_agent_id String?
   driver_firstname String
   driver_surname String
   date String
@@ -52,7 +55,7 @@ model Log {
   plate_number String
   no_of_passenger Int
   time_in String
-  time_out String
+  time_out String?
 
   // Relation to Agent model
   agent Agent @relation("AgentLogs", fields: [logged_by_agent_id], references: [agent_id])
