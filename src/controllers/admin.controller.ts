@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import prisma from "../client";
+import { hashAdminPassword } from "../services/admin.service";
 
 // Get Admin by admin_id
 const queryAdminByAdminID = async (adminID: string) => {
@@ -69,9 +70,9 @@ export async function createAdmin(req: Request, res: Response) {
       });
       return;
     }
-
+    const adminReBody = await hashAdminPassword(req.body);
     const admin = await prisma.admin.create({
-      data: req.body,
+      data: adminReBody,
     });
 
     res.status(201).json({

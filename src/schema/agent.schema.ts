@@ -13,6 +13,7 @@ export const createAgentSchema = z.object({
     agent_username: z.string().min(1, { message: "Cannot be empty" }),
     agent_password: z.string().min(1, { message: "Cannot be empty" }),
     profile_img: z.string().nullable(),
+    created_by_admin_admin_id: z.string(),
   })
   .strict(); //strict prevents the schema from validating payloads with properties not in the schema
 

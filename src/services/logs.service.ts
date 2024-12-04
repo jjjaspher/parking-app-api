@@ -34,6 +34,7 @@ export const generateAgentCredsForTimeIn = async (agentID: string) => {
   }
 };
 
+// Generate object with agent credentials and time out
 export const generateAgentCredsAndTimeout = async (agentID: string, timeOut: string) => {
   try {
     const agent = await prisma.agent.findFirst({

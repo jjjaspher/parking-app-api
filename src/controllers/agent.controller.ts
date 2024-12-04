@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import prisma from "../client";
+import { hashAgentPassword } from "../services/agent.service";
 
 const queryAgentByAgentID = async (agentID: string) => {
   try {
@@ -22,7 +23,6 @@ const queryAgentByAgentID = async (agentID: string) => {
 // Creating an Agent
 export async function createAgent(req: Request, res: Response) {
   try {
-    console.log(req.body);
     const agentID = req.body.agent_id;
     const existingAgent = await queryAgentByAgentID(agentID);
     if (existingAgent) {
@@ -32,9 +32,9 @@ export async function createAgent(req: Request, res: Response) {
       });
       return;
     }
-
+    const agentReqBody = await hashAgentPassword(req.body)
     const agent = await prisma.agent.create({
-      data: req.body,
+      data: agentReqBody,
     });
     res.status(201).json({
       status: true,

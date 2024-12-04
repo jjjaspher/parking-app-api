@@ -20,6 +20,9 @@ model Admin {
   admin_username String
   admin_password String
   admin_surname String
+
+  // Relation to Agent model
+  agents Agent[] @relation("AdminAgents")
   @@map("admins")
 }
 
@@ -33,7 +36,9 @@ model Agent {
   agent_surname String
   agent_username String
   agent_password String
+  created_by_admin_admin_id String
 
+  agent Admin @relation("AdminAgents", fields: [created_by_admin_admin_id], references: [admin_id])
   // Relation to Log model
   logs Log[] @relation("AgentLogs")
   @@map("agents")
