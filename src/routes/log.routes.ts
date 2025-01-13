@@ -11,7 +11,7 @@ import { createLogSchema } from '../schema/log.schema';
 // Users layout Route
 const logRoute = Router();
 logRoute.get('', getAllLogs);
-logRoute.get('/logs', getAllLogsByLoggedByAgentID);
+logRoute.get('/agent', getAllLogsByLoggedByAgentID);
 logRoute.post('/create',validateSchema(createLogSchema), createLog);
 logRoute.post('/update', updateTimeoutLogByPlateNumber);
 

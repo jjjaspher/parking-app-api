@@ -1,12 +1,31 @@
+import prisma from "../client";
 import { Admin } from "../interfaces/admin.interface";
-import { hashPassword } from "./password.service";
 
-export const hashAdminPassword = async (reqAdminBody: Admin): Promise<Admin> => {
-  const adminPassword = reqAdminBody.admin_password;
-  const updatedReqAdminBody = {
-    ...reqAdminBody,
-    admin_password: await hashPassword(adminPassword)
-  };
-  
-  return updatedReqAdminBody;
+// Get Admin by admin_id
+export const queryAdminByAdminID = async (adminID: string) => {
+  return await prisma.admin.findFirst({
+    where: {
+      admin_id: adminID
+    }
+  });
+};
+
+export async function queryAllAdmins() {
+  return await prisma.admin.findMany();
+};
+
+// todo add, interface to the adminBody
+export const queryUpdateAdminByAdminID = async (adminID: string, adminBody: any) => {
+  return await prisma.admin.update({
+    where: {
+      admin_id: adminID
+    },
+    data: adminBody
+  });
+};
+
+export const queryCreateAdmin = async (adminBody: Admin) => {
+  return await prisma.admin.create({
+    data: adminBody
+  });
 };

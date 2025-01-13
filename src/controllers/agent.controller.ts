@@ -1,24 +1,21 @@
 import { Request, Response } from "express";
-import prisma from "../client";
-import { hashAgentPassword } from "../services/agent.service";
+import { hashPasswordFromObject } from "../services/password.service";
+import { Agent } from "../interfaces/agent.interface";
+import { Credentials } from "../interfaces/password.interface";
+import { queryAgentByAgentID, queryAllAgents, queryCreateAgent, queryUpdateAgentbyAgentID } from "../services/agent.service";
 
-const queryAgentByAgentID = async (agentID: string) => {
-  try {
-    const agent = await prisma.agent.findFirst({
-      where: {
-        agent_id: agentID,
-      },
-    });
-
-    if (agent) {
-      return agent;
-    }
-    return null;
-    
-  } catch (error) {
-    console.log('May error', error);
-  }
-}
+export const hashAgentPassword = async (reqAgentBody: Agent): Promise<Agent> => {
+  const passwordCredentials: Credentials = {
+    agent_password: reqAgentBody.agent_password
+    };
+  const hashedCredentials = await hashPasswordFromObject(passwordCredentials, 'agent_password');
+  const updatedReqAgentBody = {
+    ...reqAgentBody,
+    agent_password: hashedCredentials.agent_password
+  };
+  
+  return updatedReqAgentBody;
+};
 
 // Creating an Agent
 export async function createAgent(req: Request, res: Response) {
@@ -33,19 +30,18 @@ export async function createAgent(req: Request, res: Response) {
       return;
     }
     const agentReqBody = await hashAgentPassword(req.body)
-    const agent = await prisma.agent.create({
-      data: agentReqBody,
-    });
+    const agent = await queryCreateAgent(agentReqBody);
+
     res.status(201).json({
       status: true,
       message: "Agent Successfully Created",
       data: agent,
     });
   } catch (error) {
-    console.log(error)
     res.status(500).json({
       status: false,
-      message: 'server error'
+      message: 'Something went wrong...',
+      error: error
     });
   }
 }
@@ -53,21 +49,19 @@ export async function createAgent(req: Request, res: Response) {
 // Get All Agent
 export async function getAllAgents(_req: Request, res: Response) {
   try {
-    const agents = await prisma.agent.findMany();
+    const agents = await queryAllAgents();
     res.json({
       status: true,
       message: "Agents Successfully fetched",
       data: agents,
     });
-    
   } catch (error) {
-    console.log('may error', error)
     res.status(500).json({
       status: false,
-      message: 'server error'
+      message: 'Something went wrong...',
+      error: error
     });
   }
-  
 }
 
 // Get Agent by AgentID
@@ -95,14 +89,12 @@ export async function getAgentByAgentID(req: Request, res: Response) {
     });
     
   } catch (error) {
-    console.log(error)
     res.status(500).json({
       status: false,
-      message: 'server error'
+      message: 'Something went wrong...',
+      error: error
     });
-    
   }
-  
 }
 
 // Update Agent using employeeID
@@ -122,12 +114,7 @@ export async function updateAgentByAgentID(req: Request, res: Response) {
   delete filteredBody.admin_id;
 
 
-  const updatedAgent = await prisma.agent.update({
-    where: {
-    agent_id: agentID
-    },
-    data: filteredBody
-  });
+  const updatedAgent = await queryUpdateAgentbyAgentID(agentID, filteredBody);
   res.status(200).json({
     status: true,
     message: "Agent Successfully Updated",
@@ -135,6 +122,10 @@ export async function updateAgentByAgentID(req: Request, res: Response) {
   });
   
  } catch (error) {
-  console.log('May error', error);
+  res.status(500).json({
+    status: false,
+    message: 'Something went wrong...',
+    error: error
+  });
  }
 };

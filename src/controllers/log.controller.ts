@@ -1,11 +1,11 @@
 import { Request, Response } from "express";
-import prisma from "../client";
-import { generateAgentCredsAndTimeout, generateAgentCredsForTimeIn } from "../services/logs.service";
+import { queryAllLogs, queryAllLogsByLoggedByAgentID, queryCreateLog, queryLogByPlateNumber, queryUpdateLogByPlateNumber } from "../services/logs.service";
+import { queryAgentByAgentID } from "../services/agent.service";
 
 // Get all Logs
 export async function getAllLogs(_req: Request, res: Response) {
   try {
-    const logs = await prisma.log.findMany();
+    const logs = await queryAllLogs();
     res.json({
       status: true,
       message: "Logs Successfully fetched",
@@ -13,7 +13,11 @@ export async function getAllLogs(_req: Request, res: Response) {
     });
     
   } catch (error) {
-    console.log('may error', error)
+    res.status(500).json({
+      status: false,
+      message: 'Something went wrong...',
+      error: error
+    });
   }
 };
 
@@ -29,18 +33,18 @@ export async function getAllLogsByLoggedByAgentID(req: Request, res: Response) {
       return;
     }
 
-    const logs = await prisma.log.findMany({
-      where: {
-        logged_by_agent_id: loggedByAgentID || undefined
-      }
-    });
+    const logs = await queryAllLogsByLoggedByAgentID(loggedByAgentID);
     res.status(200).json({
       status: true,
       message: `Successfully Fetch All Logs by Agent ID ${loggedByAgentID}`,
       data: logs
     })
   } catch (error) {
-    console.log('may error', error)
+    res.status(500).json({
+      status: false,
+      message: 'Something went wrong...',
+      error: error
+    });
   }
   
 }
@@ -58,9 +62,7 @@ export async function createLog(req: Request, res: Response) {
       return;
     }
     const loggedTimeOutData = {...logData.data, ...body}
-    const log = await prisma.log.create({
-      data: loggedTimeOutData
-    });
+    const log = queryCreateLog(loggedTimeOutData);
     res.status(201).json({
       status: true,
       message: "Data Logged Successfully",
@@ -68,7 +70,11 @@ export async function createLog(req: Request, res: Response) {
     });
     
   } catch (error) {
-    console.log('May error', error)
+    res.status(500).json({
+      status: false,
+      message: 'Something went wrong...',
+      error: error
+    });
   }
   
 }
@@ -89,11 +95,7 @@ export async function updateTimeoutLogByPlateNumber(req: Request, res: Response)
       return;
     }
 
-    const existingLog = await prisma.log.findFirst({
-      where: {
-        plate_number: plateNumber
-      }
-    });
+    const existingLog = await queryLogByPlateNumber(plateNumber);
 
     if (!existingLog) {
       res.status(400).json({
@@ -113,12 +115,7 @@ export async function updateTimeoutLogByPlateNumber(req: Request, res: Response)
       return;
     }
 
-    const updatedLog = await prisma.log.update({
-      where: {
-        id: existingLog?.id
-      },
-      data: loggedTimeOutData.data
-    });
+    const updatedLog = await queryUpdateLogByPlateNumber(existingLog.id, loggedTimeOutData.data);
 
     res.status(201).json({
       status: true,
@@ -129,7 +126,70 @@ export async function updateTimeoutLogByPlateNumber(req: Request, res: Response)
     console.log('may error', error)
     res.status(400).json({
       status: false,
-      message: `Something went wrong... ${error}`
+      message: `Something went wrong...`,
+      error: error
     });
+  }
+};
+
+const generateAgentCredsForTimeIn = async (agentID: string) => {
+  try {
+    const agent = await queryAgentByAgentID(agentID);
+    if (!agent) {
+      return {
+        status: false,
+        message: "No Agent Found",
+        data: {}
+      }
+    };
+    return {
+      status: true,
+      message: "Agent Successfully Fetched",
+      data: {
+        logged_by_name: agent.agent_name,
+        logged_by_surname: agent.agent_surname,
+        logged_by_agent_id: agent.agent_id
+      }
+    }
+  } catch (error) {
+    console.log(error)
+    return {
+      status: false,
+      message: `Something went wrong... ${error}`,
+      data: {}
+    }
+  }
+};
+
+
+// Generate object with agent credentials and time out
+const generateAgentCredsAndTimeout = async (agentID: string, timeOut: string) => {
+  try {
+    const agent = await queryAgentByAgentID(agentID);
+
+    if (!agent) {
+      return {
+        status: false,
+        message: "No Agent Found",
+        data: {}
+      }
+    };
+    return {
+      status: true,
+      message: "Agent Successfully Fetched",
+      data: {
+        logged_out_by_name: agent.agent_name,
+        logged_out_by_surname: agent.agent_surname,
+        logged_out_by_agent_id: agent.agent_id,
+        time_out: timeOut
+      }
+    }
+  } catch (error) {
+    console.log(error)
+    return {
+      status: false,
+      message: `Something went wrong... ${error}`,
+      data: {}
+    }
   }
 };
